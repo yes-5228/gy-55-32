@@ -81,7 +81,7 @@ pip_install_with_fallback() {
     if run_with_retry 2 "${tag} (官方源)" "${PIP}" install "$@"; then
         return 0
     fi
-    log_warn "官方源安装失败，尝试国内镜像源..."
+    log_warn "官方源安装失败，尝试国内镜像源（不修改全局配置）..."
     if run_with_retry 2 "${tag} (清华镜像)" \
         "${PIP}" install -i https://pypi.tuna.tsinghua.edu.cn/simple "$@"; then
         return 0
@@ -168,22 +168,15 @@ except Exception:
 
 npm_install_with_fallback() {
     local tag="$1"; shift
-    local current_registry
-    current_registry=$(npm config get registry 2>/dev/null || echo "")
     if run_with_retry 2 "${tag} (当前源)" npm install "$@"; then
         return 0
     fi
-    log_warn "安装失败，尝试切换至国内镜像源..."
-    npm config set registry https://registry.npmmirror.com 2>/dev/null || true
-    if run_with_retry 2 "${tag} (npmmirror)" npm install "$@"; then
+    log_warn "安装失败，尝试切换至国内镜像源（不修改全局配置）..."
+    if run_with_retry 2 "${tag} (npmmirror)" npm install --registry=https://registry.npmmirror.com "$@"; then
         return 0
     fi
-    npm config set registry https://registry.npm.taobao.org 2>/dev/null || true
-    if run_with_retry 1 "${tag} (taobao)" npm install "$@"; then
+    if run_with_retry 1 "${tag} (taobao)" npm install --registry=https://registry.npm.taobao.org "$@"; then
         return 0
-    fi
-    if [ -n "${current_registry}" ]; then
-        npm config set registry "${current_registry}" 2>/dev/null || true
     fi
     return 1
 }
@@ -321,7 +314,6 @@ case "${cmd}" in
         step_backend_check
         ;;
     start)
-        step_backend_check 2>/dev/null || true
         start_backend || exit 1
         step_backend_check || exit 1
         start_frontend || exit 1
