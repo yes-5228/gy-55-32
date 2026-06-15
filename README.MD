@@ -43,20 +43,63 @@ docker compose up --build
 
 容器启动时会自动执行数据库迁移和 `seed_demo`，生成演示柜格、快件和通知数据。
 
-## 本地开发启动
+## 本地开发启动（推荐：统一命令）
+
+项目提供 `Makefile` 和 `scripts/dev.sh` 两种方式，一键完成依赖安装、数据库迁移、演示数据填充、健康检查和前端构建。
+
+### 方式一：Make（推荐）
+
+在项目根目录执行：
+
+```bash
+make all
+```
+
+其他可用命令：
+
+```bash
+make setup     # 初始化：安装依赖、迁移、填充演示数据、前端构建
+make deps      # 仅安装后端和前端依赖
+make migrate   # 仅执行数据库迁移
+make seed      # 仅填充演示数据
+make build     # 仅构建前端项目
+make check     # 检查后端服务健康状态
+make start     # 启动前后端开发服务器
+make help      # 查看所有命令
+```
+
+### 方式二：Shell 脚本
+
+```bash
+./scripts/dev.sh all      # 一键初始化并启动
+./scripts/dev.sh setup    # 仅执行初始化
+./scripts/dev.sh start    # 仅启动开发服务器
+./scripts/dev.sh help     # 查看所有命令
+```
+
+启动后访问：
+
+- 前端：http://127.0.0.1:5173
+- 后端健康检查：http://127.0.0.1:8000/api/health/
+- Django Admin：http://127.0.0.1:8000/admin/
+
+按 `Ctrl+C` 可同时停止前后端服务。
+
+## 本地开发启动（手动方式）
 
 后端：
 
 ```bash
 cd backend
-python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
-.venv\Scripts\python manage.py migrate
-.venv\Scripts\python manage.py seed_demo
-.venv\Scripts\python manage.py runserver 127.0.0.1:8000
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_demo
+python manage.py runserver 127.0.0.1:8000
 ```
 
-前端：
+前端（另开一个终端）：
 
 ```bash
 cd frontend
